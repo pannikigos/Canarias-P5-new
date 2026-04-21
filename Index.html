@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asistente de Transformación Digital</title>
+  <?!= include('Frontend/Styles') ?>
+</head>
+
+<body class="bg-gradient-to-br from-gray-50 via-white to-gray-100 min-h-screen font-sans">
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay"
+    class="fixed inset-0 bg-primary bg-opacity-90 backdrop-blur-sm z-50 hidden items-center justify-center">
+    <div class="bg-white rounded-2xl p-8 shadow-2xl text-center animate-slide-up max-w-md">
+      <div class="relative w-32 h-32 mx-auto mb-6">
+        <div class="absolute inset-0 border-4 border-secondary-light rounded-full animate-ping opacity-25"></div>
+        <div class="absolute inset-0 border-4 border-secondary rounded-full"></div>
+        <div class="absolute inset-0 border-4 border-secondary rounded-full border-t-transparent animate-spin"></div>
+        <i
+          class="fas fa-chart-line text-5xl text-secondary absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-float"></i>
+      </div>
+      <h3 class="text-primary font-bold text-xl mb-2">Procesando con IA</h3>
+      <p class="text-gray-600" id="loadingMessage">Optimizando respuestas...</p>
+      <div class="mt-4 w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+        <div class="bg-secondary h-2 rounded-full animate-pulse" style="width: 60%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+  <div class="container mx-auto px-4 py-8 max-w-7xl">
+    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden animate-slide-up card-hover">
+      <div class="bg-gradient-hero p-8 text-white relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mt-32 -mr-32"></div>
+        <div class="absolute bottom-0 left-0 w-48 h-48 bg-secondary opacity-10 rounded-full -mb-24 -ml-24"></div>
+        <div
+          class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-accent opacity-5 rounded-full blur-3xl">
+        </div>
+        <div class="relative z-10">
+          <h1 class="text-3xl font-bold mb-2">Plan de Transformación Digital</h1>
+          <p class="text-gray-200">Completa la información para el llenado del Plan de Transformación Digital</p>
+          <div class="mt-6">
+            <div class="flex justify-between text-sm mb-2">
+              <span><i class="fas fa-tasks mr-1"></i> Progreso general</span>
+              <span id="progresoPorcentaje" class="font-semibold text-white">0%</span>
+            </div>
+            <div class="w-full bg-white bg-opacity-30 rounded-full h-3 overflow-hidden">
+              <div id="progressBar" class="bg-white h-3 rounded-full transition-all duration-500 ease-out"
+                style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-8 md:p-10 lg:p-12">
+        <div class="mb-8 flex items-center justify-between text-base">
+          <div class="flex items-center space-x-2 text-primary">
+            <i class="fas fa-question-circle text-accent text-xl"></i>
+            <span id="preguntaContador" class="font-medium text-lg">Pregunta 1 de 0</span>
+          </div>
+        </div>
+
+        <div id="questionsContainer" class="min-h-[500px]"></div>
+
+        <div class="flex gap-4 mt-10 pt-6 border-t border-gray-200">
+          <button id="btnAnterior"
+            class="hidden flex-1 px-8 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 focus:ring-4 focus:ring-secondary focus:ring-opacity-50 btn-custom text-lg">
+            <i class="fas fa-arrow-left mr-3"></i> Anterior
+          </button>
+          <button id="btnSiguiente"
+            class="flex-1 px-8 py-4 bg-secondary hover:bg-secondary-dark text-white rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl focus:ring-4 focus:ring-secondary focus:ring-opacity-50 btn-custom text-lg">
+            Siguiente <i class="fas fa-arrow-right ml-3"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <?!= include('Frontend/Js') ?>
+</body>
+
+</html>
