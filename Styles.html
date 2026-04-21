@@ -1,0 +1,573 @@
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+<style>
+  /* Sobrescritura de colores de Tailwind con la paleta corporativa */
+  :root {
+    --primary: #040025;
+    --secondary: #8ABC43;
+    --accent: #2885FF;
+    --primary-light: #1a1a3a;
+    --secondary-light: #a0d15e;
+    --accent-light: #5a9eff;
+    --primary-dark: #020018;
+    --secondary-dark: #6d9a35;
+    --accent-dark: #1a6bd9;
+  }
+
+  /* Clases personalizadas para la paleta */
+  .bg-primary {
+    background-color: #040025;
+  }
+
+  .bg-secondary {
+    background-color: #8ABC43;
+  }
+
+  .bg-accent {
+    background-color: #2885FF;
+  }
+
+  .bg-primary-light {
+    background-color: #1a1a3a;
+  }
+
+  .bg-secondary-light {
+    background-color: #a0d15e;
+  }
+
+  .bg-accent-light {
+    background-color: #5a9eff;
+  }
+
+  .text-primary {
+    color: #040025;
+  }
+
+  .text-secondary {
+    color: #8ABC43;
+  }
+
+  .text-accent {
+    color: #2885FF;
+  }
+
+  .border-primary {
+    border-color: #040025;
+  }
+
+  .border-secondary {
+    border-color: #8ABC43;
+  }
+
+  .border-accent {
+    border-color: #2885FF;
+  }
+
+  .hover\:bg-primary-dark:hover {
+    background-color: #020018;
+  }
+
+  .hover\:bg-secondary-dark:hover {
+    background-color: #6d9a35;
+  }
+
+  .hover\:bg-accent-dark:hover {
+    background-color: #1a6bd9;
+  }
+
+
+  /* Gradiente primario (Primary → Accent) */
+  bg-gradient-to-r from-primary to-accent
+  /* Equivalente a: bg-gradient-to-r from-[#040025] to-[#2885FF] */
+
+  /* Gradiente secundario (Secondary → Secondary-dark) */
+  bg-gradient-to-r from-secondary to-secondary-dark
+  /* Equivalente a: bg-gradient-to-r from-[#8ABC43] to-[#6d9a35] */
+
+  /* Gradiente hero (Primary → Secondary) */
+  bg-gradient-to-r from-primary to-secondary
+  /* Equivalente a: bg-gradient-to-r from-[#040025] to-[#8ABC43] */
+
+  /* Gradiente acento (Accent → Accent-dark) */
+  bg-gradient-to-r from-accent to-accent-dark
+  /* Equivalente a: bg-gradient-to-r from-[#2885FF] to-[#1a6bd9] */
+
+  /* Gradientes personalizados con la paleta */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #040025 0%, #1a1a3a 100%);
+  }
+
+  .bg-gradient-secondary {
+    background: linear-gradient(135deg, #8ABC43 0%, #6d9a35 100%);
+  }
+
+  .bg-gradient-accent {
+    background: linear-gradient(135deg, #2885FF 0%, #1a6bd9 100%);
+  }
+
+  .bg-gradient-hero {
+    background: linear-gradient(135deg, #040025 0%, #2885FF 100%);
+  }
+
+  .matrix-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .matrix-checkbox:checked {
+    background-color: currentColor;
+    border-color: currentColor;
+  }
+
+  .matrix-checkbox:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .matrix-checkbox.bg-red-500:checked {
+    background-color: #ef4444;
+    border-color: #ef4444;
+  }
+
+  .matrix-checkbox.bg-yellow-500:checked {
+    background-color: #eab308;
+    border-color: #eab308;
+  }
+
+  .matrix-checkbox.bg-green-500:checked {
+    background-color: #10b981;
+    border-color: #10b981;
+  }
+
+  .matrix-checkbox.bg-gray-100:checked {
+    background-color: #9ca3af;
+    border-color: #9ca3af;
+  }
+
+  /* Animación al seleccionar */
+  .matrix-checkbox {
+    transition: all 0.2s ease;
+  }
+
+  .matrix-checkbox:checked {
+    transform: scale(1.1);
+  }
+
+
+  /* Animaciones personalizadas */
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse-glow {
+
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(139, 188, 67, 0.4);
+    }
+
+    50% {
+      box-shadow: 0 0 0 8px rgba(139, 188, 67, 0);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s infinite;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .shimmer-effect {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  /* Scrollbar personalizada con colores corporativos */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #8ABC43;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #6d9a35;
+  }
+
+  /* Focus ring con color secundario */
+  .focus-ring-custom:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #8ABC43;
+    ring-offset: 2px;
+  }
+
+  /* Botón personalizado */
+  .btn-custom {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-custom:active {
+    transform: scale(0.98);
+  }
+
+  /* Card hover effect */
+  .card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Animaciones personalizadas */
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse-glow {
+
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+    }
+
+    50% {
+      box-shadow: 0 0 0 8px rgba(99, 102, 241, 0);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s infinite;
+  }
+
+  .shimmer-effect {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  /* Scrollbar personalizada */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  /* Transiciones suaves */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Focus ring personalizado */
+  .focus-ring-custom:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #6366f1;
+    ring-offset: 2px;
+  }
+
+
+  /* Estilos para tablas responsive */
+  .dynamic-table-container {
+    position: relative;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+  }
+
+  .dynamic-table-container table {
+    width: 100%;
+    min-width: 600px;
+    /* Ancho mínimo antes de hacer scroll */
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  /* Para pantallas muy pequeñas */
+  @media (max-width: 768px) {
+    .dynamic-table-container {
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .dynamic-table-container table {
+      min-width: 500px;
+    }
+
+    /* Ajustar celdas para móvil */
+    .dynamic-table-container th,
+    .dynamic-table-container td {
+      padding: 0.75rem 0.5rem !important;
+      font-size: 0.875rem;
+    }
+
+    /* Botones más compactos en móvil */
+    .dynamic-table-container button {
+      padding: 0.5rem !important;
+    }
+  }
+
+  /* Estilo para scroll horizontal suave */
+  .dynamic-table-container::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .dynamic-table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  .dynamic-table-container::-webkit-scrollbar-thumb {
+    background: #8ABC43;
+    border-radius: 4px;
+  }
+
+  .dynamic-table-container::-webkit-scrollbar-thumb:hover {
+    background: #6d9a35;
+  }
+
+  /* Indicador de scroll */
+  .dynamic-table-scroll-indicator {
+    text-align: center;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+    background: #f9fafb;
+    border-radius: 0 0 0.5rem 0.5rem;
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .dynamic-table-scroll-indicator {
+      display: block;
+    }
+  }
+
+  /* Mejoras para móvil */
+  @media (max-width: 640px) {
+
+    /* Aumentar área táctil de botones */
+    .dynamic-table-container button {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    /* Mejorar contraste en móvil */
+    .dynamic-table-container input,
+    .dynamic-table-container select,
+    .dynamic-table-container textarea {
+      font-size: 16px !important;
+      /* Previene zoom en iOS */
+    }
+
+    /* Ajustar padding de celdas */
+    .dynamic-table-container td,
+    .dynamic-table-container th {
+      padding: 0.75rem 0.5rem !important;
+    }
+
+    /* Sticky header para mejor navegación */
+    .dynamic-table-container thead tr th {
+      position: sticky;
+      top: 0;
+      background-color: #f9fafb;
+      z-index: 10;
+    }
+  }
+
+  /* Animación suave al agregar filas */
+  @keyframes fadeInRow {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .table-row {
+    animation: fadeInRow 0.3s ease-out;
+  }
+
+
+  .business-canvas-container {
+    position: relative;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .business-canvas-container table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .business-canvas-container th,
+  .business-canvas-container td {
+    white-space: normal;
+    word-wrap: break-word;
+  }
+
+  /* Indicador de scroll */
+  .dynamic-table-scroll-indicator {
+    background: linear-gradient(90deg, #f3f4f6, #e5e7eb);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    color: #4b5563;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+
+    0%,
+    100% {
+      opacity: 0.6;
+    }
+
+    50% {
+      opacity: 1;
+    }
+  }
+
+  /* Scrollbar personalizada */
+  .business-canvas-container::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .business-canvas-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  .business-canvas-container::-webkit-scrollbar-thumb {
+    background: #8ABC43;
+    border-radius: 4px;
+  }
+
+  .business-canvas-container::-webkit-scrollbar-thumb:hover {
+    background: #6d9a35;
+  }
+</style>
+
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: '#040025',
+          secondary: '#8ABC43',
+          accent: '#2885FF',
+          'primary-dark': '#020018',
+          'secondary-dark': '#6d9a35',
+          'accent-dark': '#1a6bd9',
+          'primary-light': '#1a1a3a',
+          'secondary-light': '#a0d15e',
+          'accent-light': '#5a9eff',
+        }
+      }
+    }
+  }
+
+
+
+</script>
