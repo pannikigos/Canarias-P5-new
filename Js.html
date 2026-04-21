@@ -1,0 +1,284 @@
+<script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  // ==================== VARIABLES GLOBALES ====================
+  let preguntas = [];
+  let respuestas = {};
+  let indiceActual = 0;
+  let isSubmitting = false;
+  window.tagsData = {};
+  window.matrixSelections = {};
+
+  // ==================== INICIALIZACIÓN ====================
+  google.script.run.withSuccessHandler(inicializarFormulario).obtenerPreguntas();
+
+  function inicializarFormulario(preguntasData) {
+    preguntas = preguntasData;
+    actualizarContador();
+    mostrarPreguntaActual();
+
+    document.getElementById('btnSiguiente').addEventListener('click', siguientePregunta);
+    document.getElementById('btnAnterior').addEventListener('click', anteriorPregunta);
+
+    // cargarBorradorLocal();
+    //  window.addEventListener('beforeunload', () => guardarBorradorLocal());
+
+    document.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter' && !isSubmitting && document.activeElement.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        siguientePregunta();
+      }
+    });
+  }
+
+  // ==================== NAVEGACIÓN ====================
+  function mostrarPreguntaActual() {
+    const container = document.getElementById('questionsContainer');
+    const pregunta = preguntas[indiceActual];
+    if (!pregunta) return;
+
+    container.style.opacity = '0';
+    container.style.transform = 'translateX(20px)';
+    setTimeout(() => {
+      container.innerHTML = generarHTMLPregunta(pregunta);
+      restaurarValoresPregunta(pregunta);
+      setTimeout(() => {
+        const primerCampo = container.querySelector('input:not([type="hidden"]), textarea, select');
+        if (primerCampo && !primerCampo.value) primerCampo.focus();
+      }, 100);
+      container.style.transition = 'all 0.3s ease';
+      container.style.opacity = '1';
+      container.style.transform = 'translateX(0)';
+    }, 150);
+
+    document.getElementById('btnAnterior').classList.toggle('hidden', indiceActual === 0);
+    const btnSiguiente = document.getElementById('btnSiguiente');
+    const isLast = indiceActual === preguntas.length - 1;
+    btnSiguiente.innerHTML = isLast ? '<i class="fas fa-check-circle mr-2"></i> Finalizar y Optimizar' : 'Siguiente <i class="fas fa-arrow-right ml-2"></i>';
+    actualizarContador();
+    actualizarProgreso();
+  }
+
+  function actualizarContador() {
+    document.getElementById('preguntaContador').innerHTML = `Pregunta ${indiceActual + 1} de ${preguntas.length}`;
+  }
+
+  function actualizarProgreso() {
+    const progreso = ((indiceActual + 1) / preguntas.length) * 100;
+    document.getElementById('progressBar').style.width = `${progreso}%`;
+    document.getElementById('progresoPorcentaje').textContent = `${Math.round(progreso)}%`;
+  }
+
+  // ==================== GUARDADO Y VALIDACIÓN ====================
+  function guardarRespuestaActual() {
+    const pregunta = preguntas[indiceActual];
+    if (!pregunta) return true;
+
+    try {
+      switch (pregunta.tipo) {
+        case 'matrix-checkbox':
+          updateMatrixHiddenField(pregunta.id);
+          respuestas[pregunta.id] = document.getElementById(`respuesta_${pregunta.id}`).value;
+          break;
+        default:
+          const campo = document.querySelector(`#respuesta_${pregunta.id}`);
+          if (campo) respuestas[pregunta.id] = campo.value;
+          break;
+      }
+      return true;
+    } catch (error) {
+      console.error('Error guardando respuesta:', error);
+      mostrarToast('Error al guardar la respuesta', 'error');
+      return false;
+    }
+  }
+
+  function validarRespuestaActual() {
+    const pregunta = preguntas[indiceActual];
+    if (!pregunta) return true;
+
+    switch (pregunta.tipo) {
+      case 'matrix-checkbox':
+        const sel = window.matrixSelections[pregunta.id];
+        if (!sel || (!sel.selected && Object.keys(sel.combinations || {}).length === 0)) {
+          mostrarToast('Selecciona al menos una opción', 'warning');
+          return false;
+        }
+        return true;
+      default:
+        const respuesta = respuestas[pregunta.id];
+        if (!respuesta || respuesta.trim() === '') {
+          mostrarToast('Por favor, responde la pregunta', 'warning');
+          const campo = document.querySelector(`#respuesta_${pregunta.id}`);
+          if (campo) campo.classList.add('border-red-500', 'bg-red-50');
+          return false;
+        }
+        return true;
+    }
+  }
+
+  function siguientePregunta() {
+    if (isSubmitting) return;
+    if (!guardarRespuestaActual()) return;
+    if (!validarRespuestaActual()) return;
+
+    if (indiceActual === preguntas.length - 1) {
+      finalizarFormulario();
+    } else {
+      indiceActual++;
+      mostrarPreguntaActual();
+    }
+  }
+
+  function anteriorPregunta() {
+    guardarRespuestaActual();
+    indiceActual--;
+    mostrarPreguntaActual();
+  }
+
+  // ==================== FINALIZAR ====================
+  async function finalizarFormulario() {
+    guardarRespuestaActual();
+    isSubmitting = true;
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    loadingOverlay.classList.remove('hidden');
+    loadingOverlay.classList.add('flex');
+
+    const messages = ['Analizando respuestas...', 'Aplicando IA...', 'Optimizando redacción...', 'Generando insights...', 'Actualizando presentaciones...'];
+    let msgIndex = 0;
+    const msgInterval = setInterval(() => {
+      document.getElementById('loadingMessage').textContent = messages[msgIndex % messages.length];
+      msgIndex++;
+    }, 2000);
+
+    try {
+      const resultado = await new Promise((resolve, reject) => {
+        google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).procesarFormulario(respuestas);
+      });
+      
+      clearInterval(msgInterval);
+      loadingOverlay.classList.add('hidden');
+      localStorage.removeItem('formulario_digital_borrador');
+      Swal.fire({
+        title: '¡Presentación Generada!', 
+        html: `Tus respuestas han sido procesadas.<br><br><a href="${resultado.url}" target="_blank" class="text-indigo-600 font-bold hover:underline" style="font-size: 1.1em;">👉 Abrir Presentación en Google Slides 👈</a>`, 
+        icon: 'success',
+        confirmButtonText: 'Finalizar', confirmButtonColor: '#6366f1'
+      }).then(() => google.script.host.close());
+    } catch (error) {
+      clearInterval(msgInterval);
+      loadingOverlay.classList.add('hidden');
+      Swal.fire({ title: 'Error', text: error.message, icon: 'error', confirmButtonText: 'Intentar de nuevo' });
+      isSubmitting = false;
+    }
+  }
+
+  // ==================== FUNCIONES DE RENDERIZADO ====================
+  function getIconForType(tipo) {
+    const icons = { 'textarea': 'fa-align-left', 'matrix-checkbox': 'fa-chart-line' };
+    return icons[tipo] || 'fa-question-circle';
+  }
+
+  function generarHTMLPregunta(pregunta) {
+    const fieldId = `respuesta_${pregunta.id}`;
+    let campoHTML = '';
+
+    switch (pregunta.tipo) {
+      case 'matrix-checkbox':
+        campoHTML = generarHTMLMatrix(pregunta);
+        break;
+      default:
+        campoHTML = `<textarea id="${fieldId}" rows="5" class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-accent focus:ring-4 focus:ring-accent focus:ring-opacity-20 transition-all duration-300 resize-none" placeholder="Escribe tu respuesta detallada aquí..."></textarea><div class="mt-2 text-xs text-gray-500"><i class="fas fa-info-circle mr-1 text-accent"></i> Sé específico y detallado</div>`;
+    }
+
+
+    return `<div class="animate-slide-up"><div class="mb-4 flex items-start space-x-3"><div class="flex-shrink-0 w-10 h-10 bg-secondary rounded-xl flex items-center justify-center text-white shadow-lg"><i class="fas ${getIconForType(pregunta.tipo)} text-lg"></i></div><div class="flex-1"><label class="block text-xl font-bold text-primary mb-3">${pregunta.numero}. ${pregunta.texto}</label>${campoHTML}</div></div>${pregunta.ayuda ? `<div class="ml-13 mt-3 p-3 bg-accent bg-opacity-5 rounded-lg border border-accent border-opacity-20"><i class="fas fa-lightbulb text-accent mr-2"></i><span class="text-sm text-gray-700">${pregunta.ayuda}</span></div>` : ''}</div>`;
+  }
+
+
+  function generarHTMLMatrix(pregunta) {
+    const matrixConfig = pregunta.matrixConfig;
+    const rows = matrixConfig?.rows || [];
+    const columns = matrixConfig?.columns || [];
+    const combinations = matrixConfig?.combinations || [];
+    const multipleSelection = pregunta.multipleSelection || false;
+    const preguntaId = pregunta.id;
+    return `<div id="matrix-container-${preguntaId}" class="space-y-4"><div class="overflow-x-auto"><table class="min-w-full bg-white border"><thead><tr><th class="px-4 py-3 bg-gray-50"></th>${columns.map(col => `<th class="px-6 py-3 text-center bg-gray-50"><div class="flex flex-col items-center"><span class="text-lg font-bold ${col.color === 'secondary' ? 'text-secondary' : 'text-accent'}">${col.label}</span><span class="text-xs text-gray-500">Impacto</span></div></th>`).join('')}</tr></thead><tbody>${rows.map(row => `<tr><td class="px-4 py-4 font-bold text-center bg-gray-50"><div><span class="text-lg font-bold ${row.color === 'secondary' ? 'text-secondary' : 'text-accent'}">${row.label}</span><span class="text-xs text-gray-500 block">Probabilidad</span></div></td>${columns.map(col => { const combo = combinations.find(c => c.row === row.value && c.col === col.value); const comboLabel = combo ? combo.label : `${row.label}-${col.label}`; return `<td class="px-4 py-4 text-center"><label class="inline-flex items-center"><input type="checkbox" class="matrix-checkbox w-6 h-6 border-2 rounded-lg" data-row="${row.value}" data-col="${col.value}" data-combo="${comboLabel}" onchange="handleMatrixSelection(${preguntaId}, this, ${multipleSelection})"></label><div class="text-xs text-gray-500">${combo?.description || ''}</div></td>`; }).join('')}</tr>`).join('')}</tbody></table></div><input type="hidden" id="respuesta_${preguntaId}"></div>`;
+  }
+
+  // ==================== RESTAURACIÓN DE VALORES ====================
+  function restaurarValoresPregunta(pregunta) {
+    const respuestaGuardada = respuestas[pregunta.id];
+    if (!respuestaGuardada) return;
+    switch (pregunta.tipo) {
+      case 'matrix-checkbox':
+        restaurarMatriz(pregunta.id, respuestaGuardada);
+        break;
+      default:
+        const campo = document.querySelector(`#respuesta_${pregunta.id}`);
+        if (campo) campo.value = respuestaGuardada;
+        break;
+    }
+  }
+
+
+  function restaurarMatriz(preguntaId, respuestaGuardada) {
+    let saved = typeof respuestaGuardada === 'string' ? JSON.parse(respuestaGuardada) : respuestaGuardada;
+    if (!saved) return;
+    const multiple = preguntas.find(p => p.id === preguntaId)?.multipleSelection || false;
+    window.matrixSelections[preguntaId] = { selected: null, multiple, combinations: {} };
+    const checkboxes = document.querySelectorAll(`#matrix-container-${preguntaId} .matrix-checkbox`);
+    if (!multiple && typeof saved === 'string') {
+      const cb = Array.from(checkboxes).find(cb => cb.dataset.combo === saved);
+      if (cb) cb.checked = true;
+      window.matrixSelections[preguntaId].selected = saved;
+    } else if (multiple && Array.isArray(saved)) {
+      saved.forEach(combo => {
+        const cb = Array.from(checkboxes).find(cb => cb.dataset.combo === combo);
+        if (cb) { cb.checked = true; window.matrixSelections[preguntaId].combinations[combo] = true; }
+      });
+    }
+    updateMatrixHiddenField(preguntaId);
+  }
+
+
+  function handleMatrixSelection(preguntaId, checkbox, multiple) {
+    const combo = checkbox.dataset.combo;
+    if (!window.matrixSelections[preguntaId]) window.matrixSelections[preguntaId] = { selected: null, multiple, combinations: {} };
+    const sel = window.matrixSelections[preguntaId];
+    if (!multiple) {
+      if (checkbox.checked) {
+        document.querySelectorAll(`#matrix-container-${preguntaId} .matrix-checkbox`).forEach(cb => { if (cb !== checkbox) cb.checked = false; });
+        sel.selected = combo;
+      } else sel.selected = null;
+    } else {
+      if (checkbox.checked) sel.combinations[combo] = true;
+      else delete sel.combinations[combo];
+    }
+    updateMatrixHiddenField(preguntaId);
+  }
+
+  function updateMatrixHiddenField(preguntaId) {
+    const hidden = document.getElementById(`respuesta_${preguntaId}`);
+    const sel = window.matrixSelections[preguntaId];
+    let value = sel?.multiple ? Object.keys(sel.combinations) : (sel?.selected || null);
+    hidden.value = JSON.stringify(value);
+    respuestas[preguntaId] = hidden.value;
+  }
+
+
+  function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function (m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+
+  function mostrarToast(msg, tipo = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    const colores = { success: 'bg-green-500', error: 'bg-red-500', warning: 'bg-yellow-500', info: 'bg-blue-500' };
+    const iconos = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+    toast.className = `${colores[tipo]} text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 animate-slide-up`;
+    toast.innerHTML = `<i class="fas ${iconos[tipo]} text-xl"></i><span>${msg}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(100px)'; setTimeout(() => toast.remove(), 300); }, 3000);
+  }
+
+
+</script>
